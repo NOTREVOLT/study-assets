@@ -2222,7 +2222,7 @@
 
 
       async mountHtml5Game(game, updateStatus) {
-        updateStatus('Loading game environment...');
+        updateStatus('Connecting to ' + (game.title || 'game') + '...');
 
         let srcUrl = game.source || '';
         if (srcUrl.startsWith('/')) {
@@ -2230,10 +2230,6 @@
         }
 
         const candidates = [srcUrl];
-        const slug = game.slug || game.id;
-        const directFallback = 'https://cdn.jsdelivr.net/gh/bubblfan/biologyexams@main/' + slug + '/index.html';
-        if (!candidates.includes(directFallback)) candidates.push(directFallback);
-
         if (game.fallbackSource && !candidates.includes(game.fallbackSource)) {
           let fb = game.fallbackSource;
           if (fb.startsWith('/')) fb = 'https://cdn.jsdelivr.net/gh/bubblfan/biologyexams@main' + fb;
@@ -2241,20 +2237,19 @@
         }
 
         this.container.innerHTML = `
-      <div class="runtime-loader-indicator" id="game-loading-overlay" style="pointer-events: none !important;">
+      <div class="runtime-loader-indicator" id="game-loading-overlay">
         <div class="spinner"></div>
         <div class="loader-status">Loading ${game.title}...</div>
-        <div class="loader-sub">Optimizing for iPad Hardware & Touch</div>
+        <div class="loader-sub">Tap canvas if audio is muted</div>
       </div>
     `;
 
         const iframe = document.createElement('iframe');
         iframe.id = 'html5-active-frame';
-        iframe.setAttribute('allow', 'autoplay; fullscreen; keyboard-map; focus-without-user-activation; clipboard-read; clipboard-write; gamepad; midi; camera; microphone; cross-origin-isolated');
+        iframe.setAttribute('allow', 'autoplay; fullscreen; keyboard-map; focus-without-user-activation; clipboard-read; clipboard-write; gamepad; cross-origin-isolated');
         iframe.setAttribute('allowfullscreen', 'true');
         iframe.setAttribute('webkitallowfullscreen', 'true');
         iframe.setAttribute('mozallowfullscreen', 'true');
-        iframe.setAttribute('referrerpolicy', 'no-referrer');
         iframe.setAttribute('loading', 'eager');
         iframe.tabIndex = 0;
         iframe.style.width = '100%';
@@ -2279,14 +2274,12 @@
           try {
             iframe.tabIndex = 0;
             iframe.focus({ preventScroll: true });
-            if (iframe.contentWindow) {
-              iframe.contentWindow.focus();
-            }
+            if (iframe.contentWindow) iframe.contentWindow.focus();
           } catch (e) { }
         };
 
         iframe.addEventListener('load', () => {
-          removeOverlay();
+          setTimeout(removeOverlay, 600);
           setTimeout(focusIframe, 50);
           setTimeout(focusIframe, 300);
           setTimeout(focusIframe, 800);
@@ -2295,44 +2288,12 @@
         this.container.addEventListener('pointerdown', () => focusIframe(), { passive: true });
         this.container.addEventListener('touchstart', () => focusIframe(), { passive: true });
 
-        let rendered = false;
-        for (const url of candidates) {
-          if (!url) continue;
-          try {
-            updateStatus(`Streaming "${game.title}" payload...`);
-            const res = await fetch(url);
-            if (!res.ok) continue;
+        const targetUrl = candidates[0];
+        updateStatus('Streaming game assets...');
+        iframe.src = targetUrl;
 
-            let rawHtml = await res.text();
-            if (!rawHtml || rawHtml.length < 50) continue;
-
-            const baseUrl = url.substring(0, url.lastIndexOf('/') + 1);
-            const LT = String.fromCharCode(60);
-            const GT = String.fromCharCode(62);
-
-            const baseTag = LT + 'base href="' + baseUrl + '"' + GT;
-            const styleTag = LT + 'style' + GT + 'html,body{width:100%!important;height:100%!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#000!important;touch-action:none!important;display:flex!important;align-items:center!important;justify-content:center!important;position:relative!important;}.gm4html5_div_class,#gm4html5_div_id{width:100%!important;height:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;position:relative!important;margin:0!important;padding:0!important;}canvas,#canvas,#unity-canvas{position:absolute!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%)!important;margin:0!important;max-width:100vw!important;max-height:100vh!important;object-fit:contain!important;}' + LT + '/style' + GT;
-            const audioScript = LT + 'script' + GT + 'document.addEventListener("touchstart",function(){if(window.g_WebAudioContext&&window.g_WebAudioContext.state==="suspended"){window.g_WebAudioContext.resume();}var ctx=window.AudioContext||window.webkitAudioContext;if(ctx){try{var c=new ctx();c.resume();}catch(e){}}}, {passive:true,once:true});' + LT + '/script' + GT;
-
-            // Strip any redirect traps or snokido scripts before rendering
-            rawHtml = rawHtml.replace(/<script[^>]*sk\.min\.js[^>]*><\/script>/gi, '');
-            rawHtml = rawHtml.replace(/<script[^>]*cloudflareinsights[^>]*><\/script>/gi, '');
-            iframe.srcdoc = baseTag + styleTag + audioScript + rawHtml;
-            rendered = true;
-            setTimeout(removeOverlay, 1500);
-            break;
-          } catch (fetchErr) {
-            console.warn('Direct fetch failed for:', url, fetchErr);
-          }
-        }
-
-        if (!rendered) {
-          updateStatus(`Loading game mirror...`);
-          iframe.src = candidates[0];
-          setTimeout(removeOverlay, 3500);
-        }
+        setTimeout(removeOverlay, 3500);
       }
-
 
       dispose() {
         if (!this.currentInstance) {
