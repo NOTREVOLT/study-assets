@@ -3,6 +3,32 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<script>
+  // Safe Storage Shim for iPad Safari / Google Sites ITP restrictions
+  (function() {
+    try {
+      var k = '__dr_test__';
+      window.localStorage.setItem(k, '1');
+      window.localStorage.removeItem(k);
+    } catch(e) {
+      var store = {};
+      try {
+        Object.defineProperty(window, 'localStorage', {
+          value: {
+            getItem: function(k) { return store.hasOwnProperty(k) ? store[k] : null; },
+            setItem: function(k, v) { store[k] = String(v); },
+            removeItem: function(k) { delete store[k]; },
+            clear: function() { store = {}; },
+            get length() { return Object.keys(store).length; },
+            key: function(i) { return Object.keys(store)[i] || null; }
+          },
+          writable: true,
+          configurable: true
+        });
+      } catch(err) {}
+    }
+  })();
+</script>
 <title>DEVICE_KNIGHT</title>
 <meta name="description" content="A frame-accurate browser recreation of the Roaring Knight fight from DELTARUNE Chapter 3. Free, non-commercial, keyboard-first.">
 <meta property="og:type" content="website">

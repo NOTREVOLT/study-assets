@@ -2391,10 +2391,12 @@
         }
 
         this.container.innerHTML = `
-      <div class="runtime-loader-indicator" id="game-loading-overlay">
+      <div class="runtime-loader-indicator" id="game-loading-overlay" style="cursor:pointer;">
         <div class="spinner"></div>
         <div class="loader-status">Loading ${game.title}...</div>
-        <div class="loader-sub">Click inside canvas or press ENTER to play</div>
+        <div class="loader-sub" style="font-size:14px; font-weight:600; color:#818cf8; margin-top:8px;">
+          👉 Tap anywhere inside this box to Start & Enable Sound
+        </div>
       </div>
     `;
 
@@ -2431,21 +2433,28 @@
             iframe.focus({ preventScroll: true });
             if (iframe.contentWindow) iframe.contentWindow.focus();
           } catch (e) { }
+          removeOverlay();
         };
 
+        const overlay = this.container.querySelector('#game-loading-overlay');
+        if (overlay) {
+          overlay.addEventListener('click', focusIframe);
+          overlay.addEventListener('touchstart', focusIframe, { passive: true });
+        }
+
         iframe.addEventListener('load', () => {
-          setTimeout(removeOverlay, 400);
+          setTimeout(removeOverlay, 1200);
           [50, 150, 350, 700, 1200, 2000].forEach(ms => setTimeout(focusIframe, ms));
         });
 
-        this.container.addEventListener('pointerdown', () => focusIframe(), { passive: true });
-        this.container.addEventListener('touchstart', () => focusIframe(), { passive: true });
-        this.container.addEventListener('click', () => focusIframe(), { passive: true });
+        this.container.addEventListener('pointerdown', focusIframe, { passive: true });
+        this.container.addEventListener('touchstart', focusIframe, { passive: true });
+        this.container.addEventListener('click', focusIframe, { passive: true });
 
         updateStatus('Streaming game assets...');
         iframe.src = srcUrl;
 
-        setTimeout(removeOverlay, 3000);
+        setTimeout(removeOverlay, 4000);
       }
 
       dispose() {
