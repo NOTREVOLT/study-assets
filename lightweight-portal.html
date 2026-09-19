@@ -2381,7 +2381,7 @@
 
 
             async mountHtml5Game(game, updateStatus) {
-        updateStatus('Connecting to ' + (game.title || 'game') + '...');
+        updateStatus('Loading ' + (game.title || 'game') + '...');
 
         let srcUrl = game.source || '';
         if (srcUrl.startsWith('/') && !srcUrl.startsWith('//')) {
@@ -2390,23 +2390,10 @@
           srcUrl = 'https://rawcdn.githack.com/NOTREVOLT/study-assets/main/' + srcUrl;
         }
 
-        const safeTitle = (game.title || 'Game').replace(/"/g, '&quot;');
         this.container.innerHTML = `
-      <div class="runtime-loader-indicator" id="game-loading-overlay" style="cursor:pointer; z-index: 10;">
+      <div class="runtime-loader-indicator" id="game-loading-overlay">
         <div class="spinner"></div>
-        <div class="loader-status">Loading ${safeTitle}...</div>
-        <div class="loader-sub" style="font-size:14px; font-weight:600; color:#818cf8; margin-top:8px;">
-          👉 Tap anywhere to Start & Enable Audio
-        </div>
-      </div>
-      <div class="html5-bottom-bar" style="position:absolute; bottom:14px; left:50%; transform:translateX(-50%); z-index:30; display:flex; gap:10px; background:rgba(10,14,24,0.92); border:1px solid rgba(99,102,241,0.5); padding:8px 14px; border-radius:12px; backdrop-filter:blur(10px); box-shadow:0 8px 30px rgba(0,0,0,0.7); max-width:92vw;">
-        <button id="direct-popout-action" type="button" style="background:linear-gradient(135deg, #6366f1, #4f46e5); color:#ffffff; border:none; padding:9px 16px; font-weight:700; border-radius:8px; cursor:pointer; font-size:13px; display:inline-flex; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(99,102,241,0.4);">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-          Launch Full Tab (Fix Black Screen)
-        </button>
-        <button id="switch-mirror-action" type="button" style="background:rgba(255,255,255,0.08); color:#cbd5e1; border:1px solid rgba(255,255,255,0.12); padding:9px 13px; font-weight:600; border-radius:8px; cursor:pointer; font-size:12px;">
-          🔄 Mirror 2
-        </button>
+        <div class="loader-status">Starting ${(game.title || 'Game').replace(/"/g, '&quot;')}...</div>
       </div>
     `;
 
@@ -2419,47 +2406,24 @@
         iframe.setAttribute('referrerpolicy', 'no-referrer');
         iframe.setAttribute('loading', 'eager');
         iframe.tabIndex = 0;
+        iframe.style.position = 'absolute';
+        iframe.style.top = '0';
+        iframe.style.left = '0';
         iframe.style.width = '100%';
         iframe.style.height = '100%';
         iframe.style.border = 'none';
         iframe.style.display = 'block';
-        iframe.style.background = '#000';
+        iframe.style.background = '#000000';
 
         this.container.appendChild(iframe);
         this.currentInstance = iframe;
         this.currentEngineType = 'html5';
 
-        const popoutBtn = this.container.querySelector('#direct-popout-action');
-        if (popoutBtn) {
-          popoutBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            window.open(srcUrl, '_blank');
-          });
-        }
-
-        const mirrorBtn = this.container.querySelector('#switch-mirror-action');
-        if (mirrorBtn) {
-          let mirrorIndex = 0;
-          const mirrorUrls = [srcUrl];
-          if (game.fallbackSource && !mirrorUrls.includes(game.fallbackSource)) mirrorUrls.push(game.fallbackSource);
-          if (srcUrl.includes('normalman121.github.io') && !mirrorUrls.includes('https://cdn.jsdelivr.net/gh/a456pur/seraph@main/games/fnf/index.html')) {
-            mirrorUrls.push('https://cdn.jsdelivr.net/gh/a456pur/seraph@main/games/fnf/index.html');
-          }
-          mirrorBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            mirrorIndex = (mirrorIndex + 1) % mirrorUrls.length;
-            srcUrl = mirrorUrls[mirrorIndex];
-            iframe.src = srcUrl;
-            mirrorBtn.textContent = '🔄 Mirror ' + (mirrorIndex + 1);
-            updateStatus('Switched to Mirror ' + (mirrorIndex + 1) + '...');
-          });
-        }
-
         const removeOverlay = () => {
           const overlay = this.container.querySelector('#game-loading-overlay');
           if (overlay) {
             overlay.style.opacity = '0';
-            setTimeout(() => { if (overlay && overlay.parentNode) overlay.remove(); }, 300);
+            setTimeout(() => { if (overlay && overlay.parentNode) overlay.remove(); }, 200);
           }
         };
 
@@ -2472,25 +2436,18 @@
           removeOverlay();
         };
 
-        const overlay = this.container.querySelector('#game-loading-overlay');
-        if (overlay) {
-          overlay.addEventListener('click', focusIframe);
-          overlay.addEventListener('touchstart', focusIframe, { passive: true });
-        }
-
         iframe.addEventListener('load', () => {
-          setTimeout(removeOverlay, 1000);
-          [50, 150, 350, 700, 1200, 2000].forEach(ms => setTimeout(focusIframe, ms));
+          removeOverlay();
+          [50, 150, 350, 700, 1200].forEach(ms => setTimeout(focusIframe, ms));
         });
 
         this.container.addEventListener('pointerdown', focusIframe, { passive: true });
-        this.container.addEventListener('touchstart', focusIframe, { passive: true });
         this.container.addEventListener('click', focusIframe, { passive: true });
 
-        updateStatus('Streaming game assets...');
+        updateStatus('Playing ' + (game.title || 'game'));
         iframe.src = srcUrl;
 
-        setTimeout(removeOverlay, 3500);
+        setTimeout(removeOverlay, 2500);
       }
 
       dispose() {
@@ -2673,7 +2630,6 @@
 
       async init() {
         this.initKeyboardSubsystem();
-        this.initTouchGamepad();
         this.initRuntimeLoader();
         this.bindEvents();
         this.initLiveCounter();
@@ -2691,83 +2647,6 @@
       }
 
 
-
-      initTouchGamepad() {
-        const touchpadBtn = document.getElementById('modal-touchpad-btn');
-        const overlay = document.getElementById('virtual-gamepad-overlay');
-        if (!touchpadBtn || !overlay) return;
-
-        const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
-        let enabled = SafeStorage.getItem('revolt_touchpad_enabled');
-        if (enabled === null) {
-          enabled = isTouchDevice ? '1' : '0';
-        }
-
-        const updateVisibility = (show) => {
-          overlay.classList.toggle('hidden', !show);
-          touchpadBtn.classList.toggle('active', show);
-          SafeStorage.setItem('revolt_touchpad_enabled', show ? '1' : '0');
-        };
-
-        updateVisibility(enabled === '1');
-
-        touchpadBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const isCurrentlyHidden = overlay.classList.contains('hidden');
-          updateVisibility(isCurrentlyHidden);
-        });
-
-        // Event dispatcher for touch buttons
-        const dispatchKey = (type, key, code, keyCode) => {
-          const evtInit = {
-            key,
-            code,
-            keyCode,
-            which: keyCode,
-            bubbles: true,
-            cancelable: true,
-            view: window
-          };
-
-          const event = new KeyboardEvent(type, evtInit);
-          window.dispatchEvent(event);
-          document.dispatchEvent(event);
-
-          const iframe = document.getElementById('html5-active-frame');
-          if (iframe && iframe.contentWindow) {
-            try {
-              iframe.contentWindow.document.dispatchEvent(new KeyboardEvent(type, evtInit));
-              iframe.contentWindow.dispatchEvent(new KeyboardEvent(type, evtInit));
-            } catch (e) { }
-          }
-        };
-
-        const buttons = overlay.querySelectorAll('.vpad-btn');
-        buttons.forEach(btn => {
-          const key = btn.getAttribute('data-key');
-          const code = btn.getAttribute('data-code');
-          const keyCode = parseInt(btn.getAttribute('data-keycode'), 10) || 0;
-
-          const press = (e) => {
-            if (e.cancelable) e.preventDefault();
-            btn.classList.add('active');
-            dispatchKey('keydown', key, code, keyCode);
-          };
-
-          const release = (e) => {
-            if (e.cancelable) e.preventDefault();
-            btn.classList.remove('active');
-            dispatchKey('keyup', key, code, keyCode);
-          };
-
-          btn.addEventListener('touchstart', press, { passive: false });
-          btn.addEventListener('touchend', release, { passive: false });
-          btn.addEventListener('touchcancel', release, { passive: false });
-          btn.addEventListener('mousedown', press);
-          btn.addEventListener('mouseup', release);
-          btn.addEventListener('mouseleave', release);
-        });
-      }
 
       initKeyboardSubsystem() {
         this.keyboardManager = new KeyboardManager({

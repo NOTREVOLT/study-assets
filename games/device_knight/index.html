@@ -281,10 +281,9 @@
   </div>
 
   <script type="module">
-
     try { localStorage.removeItem('thedevice.mute'); } catch {}
     try {
-      await import('./web/main.js');
+      await import('./bundle.js');
     } catch (err) {
       console.error('sim not connected:', err);
       document.getElementById('notconnected').style.display = 'flex';
