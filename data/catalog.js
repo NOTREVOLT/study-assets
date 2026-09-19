@@ -14,8 +14,8 @@ window.PORTAL_CATALOG = [
       "iPadOS Verified"
     ],
     "engine": "html5",
-    "source": "games/device_knight/index.html",
-    "fallbackSource": "https://rawcdn.githack.com/NOTREVOLT/study-assets/main/games/device_knight/index.html",
+    "source": "https://rawcdn.githack.com/NOTREVOLT/study-assets/main/games/device_knight/index.html",
+    "fallbackSource": "https://shadowcrystal.dev/DEVICE_KNIGHT/",
     "thumbnail": "https://cdn.jsdelivr.net/gh/NOTREVOLT/study-assets@main/thumbnails/device-knight.png",
     "rating": 5,
     "popular": true,
