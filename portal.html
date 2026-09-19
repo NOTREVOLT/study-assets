@@ -3109,7 +3109,7 @@
           let sub = 'Dedicated Server';
           if (game.id === 'club-penguin') sub = 'Dedicated Server';
           else if (game.engine === 'ruffle') sub = 'Flash WASM Core';
-          else if (game.category) sub = `${game.category} &#8226; Top Rated`;
+          else if (game.category) sub = `${game.category} • Top Rated`;
           this.dom.heroSubtitle.textContent = sub;
         }
 
@@ -3139,6 +3139,13 @@
       renderCuratedRows() {
         if (this.dom.monoxidePicksRow) {
           const picksIds = [
+            'device-knight',
+            'friday-night-funkin',
+            'fnf-vs-sonic-exe',
+            'fnf-qt-rewired',
+            'fnf-vs-kapi',
+            'fnf-vs-zardy',
+            'fnf-vs-tricky',
             'undertale',
             'geometry-dash',
             'adofai',
@@ -3154,6 +3161,10 @@
 
         if (this.dom.hotWeekRow) {
           const hotIds = [
+            'device-knight',
+            'friday-night-funkin',
+            'fnf-vs-sonic-exe',
+            'fnf-vs-zardy',
             'retro-bowl',
             'geometry-dash',
             'undertale',
