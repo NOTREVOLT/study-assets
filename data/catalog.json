@@ -13,9 +13,9 @@
       "Featured",
       "iPadOS Verified"
     ],
-    "engine": "html5",
-    "source": "https://rawcdn.githack.com/NOTREVOLT/study-assets/main/games/device_knight/index.html",
-    "fallbackSource": "https://shadowcrystal.dev/DEVICE_KNIGHT/",
+    "engine": "device_knight",
+    "source": "games/device_knight/bundle.js",
+    "fallbackSource": "https://rawcdn.githack.com/NOTREVOLT/study-assets/main/games/device_knight/bundle.js",
     "thumbnail": "https://cdn.jsdelivr.net/gh/NOTREVOLT/study-assets@main/thumbnails/device-knight.png",
     "rating": 5,
     "popular": true,
